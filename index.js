@@ -2,7 +2,6 @@
 
 var helpers     = require("./helpers.js"),
     huaGet      = helpers.huaGet,
-    huaGet2     = helpers.huaGet2,
     resolveURL  = helpers.resolveURL,
     resolveURL2 = helpers.resolveURL2,
     logCallback = helpers.logCallback,
@@ -43,7 +42,7 @@ var huaOpts = "";
 
 console.time("toggle-valve");
 
-huaGet2(
+huaGet(
 
     entryURL + huaOpts,
 
@@ -65,7 +64,7 @@ huaGet2(
 
         console.log(result);
 
-        return huaGet2(
+        return huaGet(
             result + huaOpts,
             function transform(baseURL, $) {
                 var kepSess = $(classes["items"] + " " + rels["app-sess"])
@@ -86,7 +85,7 @@ huaGet2(
 
         console.log(result);
 
-        return huaGet2(
+        return huaGet(
             result + huaOpts,
             function transform(baseURL, $) {
                 var addrSpace = $(classes["colls"] + " " + rels["addr-space"])[0];

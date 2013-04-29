@@ -11,7 +11,7 @@ var jquery = fs.readFileSync("./jquery-2.0.0.js").toString();
 
 /* ------- EXPORTS ------- */
 
-function huaGet(url, jsdomCallback) {
+function huaGetJsdom(url, jsdomCallback) {
     var deferred = Q.defer();
     HTTP.read(url).then(
         function succ(body) {
@@ -39,9 +39,9 @@ function huaGet(url, jsdomCallback) {
     return deferred.promise;
 }
 
-exports.huaGet = huaGet;
+exports.huaGetJsdom = huaGetJsdom;
 
-function huaGet2(url, cheerioCallback) {
+function huaGet(url, cheerioCallback) {
     var deferred = Q.defer();
     HTTP.read(url).then(
         function succ(body) {
@@ -57,7 +57,7 @@ function huaGet2(url, cheerioCallback) {
     return deferred.promise;
 }
 
-exports.huaGet2 = huaGet2;
+exports.huaGet = huaGet;
 
 function resolveURL(window, toURL) {
     return url.resolve(window.location.href, toURL);
