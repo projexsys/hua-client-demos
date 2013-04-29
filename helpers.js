@@ -72,7 +72,7 @@ function resolveURL(windowORurl, toURL) {
 exports.resolveURL = resolveURL;
 
 function logCallback(stepNum) {
-    console.log("\n*** callback #" + stepNum + " ***\n");
+    console.log("\n*** Step #" + stepNum + " ***\n");
 }
 
 exports.logCallback = logCallback;
