@@ -41,7 +41,7 @@ function huaGetJsdom(url, jsdomCallback) {
 
 exports.huaGetJsdom = huaGetJsdom;
 
-function huaGet(url, cheerioCallback) {
+function huaGetCheerio(url, cheerioCallback) {
     var deferred = Q.defer();
     HTTP.read(url).then(
         function succ(body) {
@@ -57,14 +57,16 @@ function huaGet(url, cheerioCallback) {
     return deferred.promise;
 }
 
-exports.huaGet = huaGet;
+exports.huaGet = exports.huaGetCheerio = huaGetCheerio;
 
 function resolveURL(windowORurl, toURL) {
+    var fromURL;
     if (typeof windowORurl === "object") {
-        return url.resolve(windowORurl.location.href, toURL);
+        fromURL = windowORurl.location.href;
     } else {
-        return url.resolve(windowORurl, toURL);
+        fromURL = windowORurl;
     }
+    return url.resolve(fromURL, toURL);
 }
 
 exports.resolveURL = resolveURL;
