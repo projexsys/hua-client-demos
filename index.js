@@ -3,7 +3,6 @@
 var helpers     = require("./helpers.js"),
     huaGet      = helpers.huaGet,
     resolveURL  = helpers.resolveURL,
-    resolveURL2 = helpers.resolveURL2,
     logCallback = helpers.logCallback,
     logError    = helpers.logError;
 
@@ -12,21 +11,14 @@ var helpers     = require("./helpers.js"),
 var aliases = {
 
     class: {
-
         "colls": ".hua-collections",
-
         "items": ".hua-items"
-
     },
 
     rel: {
-
         "addr-space": "a[rel~='http://projexsys.com/hyperua/rel/address-space']",
-
         "app-sess": "a[rel~='http://projexsys.com/hyperua/rel/application-session']"
-
     }
-
 };
 
 var classes = aliases.class,
@@ -47,12 +39,16 @@ huaGet(
     entryURL + huaOpts,
 
     function step1(baseURL, $) {
-        logCallback(++stepCnt);
-        console.log(baseURL);
-        return function transform() {
-            var sessColl = $(classes["colls"] + " " + rels["app-sess"])[0];
-            return resolveURL2(baseURL, sessColl.attribs.href);
 
+        logCallback(++stepCnt);
+
+        console.log(baseURL);
+
+        return function transform() {
+
+            var sessColl = $(classes["colls"] + " " + rels["app-sess"])[0];
+
+            return resolveURL(baseURL, sessColl.attribs.href);
         }();
     }
 
@@ -65,16 +61,19 @@ huaGet(
         console.log(result);
 
         return huaGet(
+
             result + huaOpts,
+
             function transform(baseURL, $) {
+
                 var kepSess = $(classes["items"] + " " + rels["app-sess"])
                         .filter(function (idx) {
                             return $(this).text().indexOf("KepwareSession") !== -1;
                         })[0];
-                return resolveURL2(baseURL, kepSess.attribs.href);
+
+                return resolveURL(baseURL, kepSess.attribs.href);
             }
         );
-
     }
 
 ).then(
@@ -86,13 +85,16 @@ huaGet(
         console.log(result);
 
         return huaGet(
+
             result + huaOpts,
+
             function transform(baseURL, $) {
+
                 var addrSpace = $(classes["colls"] + " " + rels["addr-space"])[0];
-                return resolveURL2(baseURL, addrSpace.attribs.href);
+
+                return resolveURL(baseURL, addrSpace.attribs.href);
             }
         );
-
     }
 
 ).then (
@@ -102,19 +104,22 @@ huaGet(
         logCallback(++stepCnt);
 
         console.log(result);
-
     }
 
 ).then(
 
     function end(result) {
+
         console.log("\n*** completed in " + stepCnt + " steps ***\n");
     },
 
     logError
 
-).done(function () {
+).done(
 
-    console.timeEnd("toggle-valve");
+    function () {
 
-});
+        console.timeEnd("toggle-valve");
+    }
+
+);

@@ -59,17 +59,15 @@ function huaGet(url, cheerioCallback) {
 
 exports.huaGet = huaGet;
 
-function resolveURL(window, toURL) {
-    return url.resolve(window.location.href, toURL);
+function resolveURL(windowORurl, toURL) {
+    if (typeof windowORurl === "object") {
+        return url.resolve(windowORurl.location.href, toURL);
+    } else {
+        return url.resolve(windowORurl, toURL);
+    }
 }
 
 exports.resolveURL = resolveURL;
-
-function resolveURL2(baseURL, toURL) {
-    return url.resolve(baseURL, toURL);
-}
-
-exports.resolveURL2 = resolveURL2;
 
 function logCallback(stepNum) {
     console.log("\n*** callback #" + stepNum + " ***\n");
