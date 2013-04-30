@@ -78,7 +78,7 @@ function logCallback(stepNum) {
 exports.logCallback = logCallback;
 
 function logError(err) {
-    console.log("ERROR!!!  message: ", err.message);
+    console.log("\nERROR!!!  message: ", err.message, "\n");
 }
 
 exports.logError = logError;

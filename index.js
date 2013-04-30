@@ -1,6 +1,7 @@
 /* ------- DEPENDENCIES ------- */
 
-var S = require("string");
+var HTTP = require("q-io/http"),
+    S    = require("string");
 
 /* ------- HELPERS ------- */
 
@@ -243,7 +244,7 @@ huaGet(
         logCallback(++stepCnt);
 
         console.log(result.url + "\n");
-        console.log("OutputValve value:", result.value);
+        console.log("OutputValve value: ", result.value);
 
         return huaGetJsdom(
 
@@ -253,21 +254,75 @@ huaGet(
                 var form       = $("form").first(),
                     inputValue = $("#value");
 
-                inputValue.val("true");
+                if (result.value === "true") {
+                    inputValue.val("false");
+                } else {
+                    inputValue.val("true");
+                }
 
-                // next steps: http://stackoverflow.com/questions/6263004/post-a-form-using-jsdom-and-node-js
+                // adapted from http://stackoverflow.com/questions/6263004/post-a-form-using-jsdom-and-node-js
 
-                return "still working on it...";
+                var formData   = form.serialize(),
+                    formURL    = resolveURL(window, form.attr("action")),
+                    formType   = form.attr("enctype") || "application/x-www-form-urlencoded",
+                    formMethod = form.attr("method");
+
+                var reqObj = HTTP.normalizeRequest({
+                    url: formURL
+                });
+
+                reqObj.body   = [formData];
+                reqObj.method = formMethod;
+
+                reqObj.headers["Content-Type"] = formType;
+
+                return HTTP.request(reqObj)
+                    .then(
+
+                        function (respObj) {
+                            // HyperUA always redirects after a successful POST
+                            if (respObj.status !== 303) {
+                                throw new Error("HTTP POST to HyperUA failed");
+                            }
+
+                            var headers = respObj.headers,
+                                redirectURL = headers.location;
+
+                            return resolveURL(formURL, redirectURL);
+                        }
+
+                    );
+            }
+        );
+    }
+
+).then (
+
+    function step11(result) {
+        logCallback(++stepCnt);
+
+        console.log(result);
+
+        return huaGet(
+
+            result + huaOpts,
+
+            function transform(baseURL, $) {
+                var valveValue = $(classes["node-val"]).text();
+
+                return {
+                    value : S(valveValue).trim().s
+                };
             }
         );
     }
 
 ).then(
 
-    function step11(result) {
+    function step12(result) {
         logCallback(++stepCnt);
 
-        console.log(result);
+        console.log("OutputValve toggled to value: ", result.value);
     }
 
 ).then(
