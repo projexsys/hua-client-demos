@@ -1,8 +1,8 @@
 /* ------- DEPENDENCIES ------- */
 
 var HTTP = require("q-io/http"),
-    Q    = require("q");
-S    = require("string");
+    Q    = require("q"),
+    S    = require("string");
 
 /* ------- HELPERS ------- */
 
