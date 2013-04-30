@@ -243,7 +243,7 @@ var steps = [
 
                 if (result.value === "true") {
                     inputValue.val("false");
-                } else {
+                } else if (result.value === "false") {
                     inputValue.val("true");
                 }
 
@@ -270,7 +270,7 @@ var steps = [
                                 throw new Error("HTTP POST to HyperUA failed");
                             }
 
-                            var headers = respObj.headers,
+                            var headers     = respObj.headers,
                                 redirectURL = headers.location;
 
                             return resolveURL(formURL, redirectURL);
