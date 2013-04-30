@@ -1,7 +1,8 @@
 /* ------- DEPENDENCIES ------- */
 
 var HTTP = require("q-io/http"),
-    S    = require("string");
+    Q    = require("q");
+S    = require("string");
 
 /* ------- HELPERS ------- */
 
@@ -46,25 +47,28 @@ var huaOpts = "";
 
 var timeLabel = "Elapsed time";
 
-console.time(timeLabel);
+var steps = [
 
-huaGet(
+    function step1(result) {
 
-    entryURL + huaOpts,
+        console.time(timeLabel);
 
-    function step1(baseURL, $) {
         logCallback(++stepCnt);
 
-        console.log(baseURL);
+        console.log(result);
 
-        return function transform() {
-            var sessColl = $(classes["colls"] + " " + rels["app-sess"]).first();
+        return huaGet(
 
-            return resolveURL(baseURL, sessColl.attr("href"));
-        }();
-    }
+            result + huaOpts,
 
-).then(
+            function transform(baseURL, $) {
+                var sessColl = $(classes["colls"] + " " + rels["app-sess"]).first();
+
+                return resolveURL(baseURL, sessColl.attr("href"));
+            }
+
+        );
+    },
 
     function step2(result) {
         logCallback(++stepCnt);
@@ -84,9 +88,7 @@ huaGet(
                 return resolveURL(baseURL, kepSess.attr("href"));
             }
         );
-    }
-
-).then(
+    },
 
     function step3(result) {
         logCallback(++stepCnt);
@@ -103,9 +105,7 @@ huaGet(
                 return resolveURL(baseURL, addrSpace.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step4(result) {
         logCallback(++stepCnt);
@@ -122,9 +122,7 @@ huaGet(
                 return resolveURL(baseURL, rootNode.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step5(result) {
         logCallback(++stepCnt);
@@ -144,9 +142,7 @@ huaGet(
                 return resolveURL(baseURL, objectsNode.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step6(result) {
         logCallback(++stepCnt);
@@ -166,9 +162,7 @@ huaGet(
                 return resolveURL(baseURL, intouchNode.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step7(result) {
         logCallback(++stepCnt);
@@ -188,9 +182,7 @@ huaGet(
                 return resolveURL(baseURL, demoFolderNode.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step8(result) {
         logCallback(++stepCnt);
@@ -210,9 +202,7 @@ huaGet(
                 return resolveURL(baseURL, outputValveNode.attr("href"));
             }
         );
-    }
-
-).then (
+    },
 
     function step9(result) {
         logCallback(++stepCnt);
@@ -233,15 +223,12 @@ huaGet(
                 };
             }
         );
-    }
-
-).then (
+    },
 
     function step10(result) {
+        logCallback(++stepCnt);
 
         // expecting result to be: { url: ..., value: ... }
-
-        logCallback(++stepCnt);
 
         console.log(result.url + "\n");
         console.log("OutputValve value: ", result.value);
@@ -259,8 +246,6 @@ huaGet(
                 } else {
                     inputValue.val("true");
                 }
-
-                // adapted from http://stackoverflow.com/questions/6263004/post-a-form-using-jsdom-and-node-js
 
                 var formData   = form.serialize(),
                     formURL    = resolveURL(window, form.attr("action")),
@@ -294,9 +279,7 @@ huaGet(
                     );
             }
         );
-    }
-
-).then (
+    },
 
     function step11(result) {
         logCallback(++stepCnt);
@@ -315,29 +298,34 @@ huaGet(
                 };
             }
         );
-    }
-
-).then(
+    },
 
     function step12(result) {
         logCallback(++stepCnt);
 
+        // expecting result to be: { url: ..., value: ... }
+
         console.log("OutputValve toggled to value: ", result.value);
     }
 
-).then(
+];
 
-    function end(result) {
-        console.log("\n*** completed ***\n");
-    },
+steps
+    .reduce(Q.when, Q.resolve(entryURL))
 
-    logError
+    .then(
 
-).done(
+        function end(result) {
+            console.log("\n*** completed ***\n");
+        },
 
-    function () {
-        console.timeEnd(timeLabel);
-        console.log();
-    }
+        logError
 
-);
+    ).done(
+
+        function () {
+            console.timeEnd(timeLabel);
+            console.log();
+        }
+
+    );
