@@ -9,6 +9,8 @@ var HTTP = require("q-io/http"),
 var helpers     = require("./helpers.js"),
     huaGet      = helpers.huaGet,
     huaGetJsdom = helpers.huaGetJsdom,
+    makeStep    = helpers.makeStep,
+    makeGetStep = helpers.makeGetStep,
     resolveURL  = helpers.resolveURL,
     logCallback = helpers.logCallback,
     logError    = helpers.logError;
@@ -39,287 +41,195 @@ var classes = aliases.class,
 
 /* ------- APPLICATION ------- */
 
-var entryURL = "http://hua-demo.projexsys.com:3000/api/",
-    stepCnt  = 0;
-
-var huaOpts = "";
-// var huaOpts = "?style=false&breadcrumbs=false&navbar=false&pretty=false";
-
-var timeLabel = "Elapsed time";
+var entryURL = "http://hua-demo.projexsys.com:3000/api/";
 
 var steps = [
 
-    function step1(result) {
+    makeGetStep(
+        function step1(baseURL, $) {
+            var sessColl = $(classes["colls"] + " " + rels["app-sess"]).first();
 
-        console.time(timeLabel);
+            return resolveURL(baseURL, sessColl.attr("href"));
+        }
+    ),
 
-        logCallback(++stepCnt);
+    makeGetStep(
+        function step2(baseURL, $) {
+            var kepSess = $(classes["items"] + " " + rels["app-sess"])
+                    .filter(function (idx) {
+                        return $(this).text().indexOf("KepwareSession") !== -1;
+                    }).first();
 
-        console.log(result);
+            return resolveURL(baseURL, kepSess.attr("href"));
+        }
+    ),
 
-        return huaGet(
+    makeGetStep(
+        function step3(baseURL, $) {
+            var addrSpace = $(classes["colls"] + " " + rels["addr-space"]).first();
 
-            result + huaOpts,
+            return resolveURL(baseURL, addrSpace.attr("href"));
+        }
+    ),
 
-            function transform(baseURL, $) {
-                var sessColl = $(classes["colls"] + " " + rels["app-sess"]).first();
+    makeGetStep(
+        function step4(baseURL, $) {
+            var rootNode = $(classes["node-refs"] + " " + rels["root-node"]).first();
 
-                return resolveURL(baseURL, sessColl.attr("href"));
-            }
+            return resolveURL(baseURL, rootNode.attr("href"));
+        }
+    ),
 
-        );
-    },
+    makeGetStep(
+        function step5(baseURL, $) {
+            var objectsNode = $(classes["node-refs"] + " " + rels["node"])
+                    .filter(function (idx) {
+                        return $(this).text().indexOf("Objects") !== -1;
+                    }).first();
 
-    function step2(result) {
-        logCallback(++stepCnt);
+            return resolveURL(baseURL, objectsNode.attr("href"));
+        }
+    ),
 
-        console.log(result);
+    makeGetStep(
+        function step6(baseURL, $) {
+            var intouchNode = $(classes["node-refs"] + " " + rels["node"])
+                    .filter(function (idx) {
+                        return $(this).text().indexOf("InTouch") !== -1;
+                    }).first();
 
-        return huaGet(
+            return resolveURL(baseURL, intouchNode.attr("href"));
+        }
+    ),
 
-            result + huaOpts,
+    makeGetStep(
+        function step7(baseURL, $) {
+            var demoFolderNode = $(classes["node-refs"] + " " + rels["node"])
+                    .filter(function (idx) {
+                        return $(this).text().indexOf("Demo") !== -1;
+                    }).first();
 
-            function transform(baseURL, $) {
-                var kepSess = $(classes["items"] + " " + rels["app-sess"])
-                        .filter(function (idx) {
-                            return $(this).text().indexOf("KepwareSession") !== -1;
-                        }).first();
+            return resolveURL(baseURL, demoFolderNode.attr("href"));
+        }
+    ),
 
-                return resolveURL(baseURL, kepSess.attr("href"));
-            }
-        );
-    },
+    makeGetStep(
+        function step8(baseURL, $) {
+            var outputValveNode = $(classes["node-refs"] + " " + rels["node"])
+                    .filter(function (idx) {
+                        return $(this).text().indexOf("OutputValve") !== -1;
+                    }).first();
 
-    function step3(result) {
-        logCallback(++stepCnt);
+            return resolveURL(baseURL, outputValveNode.attr("href"));
+        }
+    ),
 
-        console.log(result);
+    makeGetStep(
+        function step9(baseURL, $) {
+            var writeForm  = $(classes["services"] + " " + rels["write-svc"]).first(),
+                valveValue = $(classes["node-val"]).text();
 
-        return huaGet(
+            valveValue = S(valveValue).trim().s;
 
-            result + huaOpts,
+            console.log("\nOutputValve value:", valveValue);
 
-            function transform(baseURL, $) {
-                var addrSpace = $(classes["colls"] + " " + rels["addr-space"]).first();
+            return {
+                url   : resolveURL(baseURL, writeForm.attr("href")),
+                value : valveValue
+            };
+        }
+    ),
 
-                return resolveURL(baseURL, addrSpace.attr("href"));
-            }
-        );
-    },
+    makeStep(
+        function step10(result) {
+            // expecting result to be: { url: ..., value: ... }
+            console.log("GET", result.url);
 
-    function step4(result) {
-        logCallback(++stepCnt);
+            return huaGetJsdom(
 
-        console.log(result);
+                result.url,
 
-        return huaGet(
+                function transform(window, $) {
+                    var form       = $("form").first(),
+                        inputValue = $("#value");
 
-            result + huaOpts,
+                    if (result.value === "true") {
+                        inputValue.val("false");
+                    } else if (result.value === "false") {
+                        inputValue.val("true");
+                    }
 
-            function transform(baseURL, $) {
-                var rootNode = $(classes["node-refs"] + " " + rels["root-node"]).first();
+                    var formData   = form.serialize(),
+                        formURL    = resolveURL(window, form.attr("action")),
+                        formType   = form.attr("enctype") || "application/x-www-form-urlencoded",
+                        formMethod = form.attr("method");
 
-                return resolveURL(baseURL, rootNode.attr("href"));
-            }
-        );
-    },
+                    var reqObj = HTTP.normalizeRequest({
+                        url: formURL
+                    });
 
-    function step5(result) {
-        logCallback(++stepCnt);
+                    reqObj.body   = [formData];
+                    reqObj.method = formMethod;
 
-        console.log(result);
+                    reqObj.headers["Content-Type"] = formType;
 
-        return huaGet(
-
-            result + huaOpts,
-
-            function transform(baseURL, $) {
-                var objectsNode = $(classes["node-refs"] + " " + rels["node"])
-                        .filter(function (idx) {
-                            return $(this).text().indexOf("Objects") !== -1;
-                        }).first();
-
-                return resolveURL(baseURL, objectsNode.attr("href"));
-            }
-        );
-    },
-
-    function step6(result) {
-        logCallback(++stepCnt);
-
-        console.log(result);
-
-        return huaGet(
-
-            result + huaOpts,
-
-            function transform(baseURL, $) {
-                var intouchNode = $(classes["node-refs"] + " " + rels["node"])
-                        .filter(function (idx) {
-                            return $(this).text().indexOf("InTouch") !== -1;
-                        }).first();
-
-                return resolveURL(baseURL, intouchNode.attr("href"));
-            }
-        );
-    },
-
-    function step7(result) {
-        logCallback(++stepCnt);
-
-        console.log(result);
-
-        return huaGet(
-
-            result + huaOpts,
-
-            function transform(baseURL, $) {
-                var demoFolderNode = $(classes["node-refs"] + " " + rels["node"])
-                        .filter(function (idx) {
-                            return $(this).text().indexOf("Demo") !== -1;
-                        }).first();
-
-                return resolveURL(baseURL, demoFolderNode.attr("href"));
-            }
-        );
-    },
-
-    function step8(result) {
-        logCallback(++stepCnt);
-
-        console.log(result);
-
-        return huaGet(
-
-            result + huaOpts,
-
-            function transform(baseURL, $) {
-                var outputValveNode = $(classes["node-refs"] + " " + rels["node"])
-                        .filter(function (idx) {
-                            return $(this).text().indexOf("OutputValve") !== -1;
-                        }).first();
-
-                return resolveURL(baseURL, outputValveNode.attr("href"));
-            }
-        );
-    },
-
-    function step9(result) {
-        logCallback(++stepCnt);
-
-        console.log(result);
-
-        return huaGet(
-
-            result + huaOpts,
-
-            function transform(baseURL, $) {
-                var writeForm  = $(classes["services"] + " " + rels["write-svc"]).first(),
-                    valveValue = $(classes["node-val"]).text();
-
-                return {
-                    url   : resolveURL(baseURL, writeForm.attr("href")),
-                    value : S(valveValue).trim().s
-                };
-            }
-        );
-    },
-
-    function step10(result) {
-        logCallback(++stepCnt);
-
-        // expecting result to be: { url: ..., value: ... }
-
-        console.log(result.url + "\n");
-        console.log("OutputValve value: ", result.value);
-
-        return huaGetJsdom(
-
-            result.url + huaOpts,
-
-            function transform(window, $) {
-                var form       = $("form").first(),
-                    inputValue = $("#value");
-
-                if (result.value === "true") {
-                    inputValue.val("false");
-                } else if (result.value === "false") {
-                    inputValue.val("true");
+                    return {
+                        reqObj  : reqObj,
+                        formURL : formURL
+                    };
                 }
+            );
+        }
+    ),
 
-                var formData   = form.serialize(),
-                    formURL    = resolveURL(window, form.attr("action")),
-                    formType   = form.attr("enctype") || "application/x-www-form-urlencoded",
-                    formMethod = form.attr("method");
+    makeStep(
+        function step11(result) {
+            // expecting result to be: { reqObj: ..., formURL: ... }
+            var reqObj = result.reqObj,
+                formURL = result.formURL;
 
-                var reqObj = HTTP.normalizeRequest({
-                    url: formURL
-                });
+            console.log("POST", formURL);
 
-                reqObj.body   = [formData];
-                reqObj.method = formMethod;
+            return HTTP.request(reqObj)
+                .then(
 
-                reqObj.headers["Content-Type"] = formType;
-
-                console.time("toggle-step");
-
-                return HTTP.request(reqObj)
-                    .then(
-
-                        function (respObj) {
-                            // HyperUA always redirects after a successful POST
-                            if (respObj.status !== 303) {
-                                throw new Error("HTTP POST to HyperUA failed");
-                            }
-
-                            console.timeEnd("toggle-step");
-
-                            var headers     = respObj.headers,
-                                redirectURL = headers.location;
-
-                            return resolveURL(formURL, redirectURL);
+                    function (respObj) {
+                        // HyperUA always redirects after a successful POST
+                        if (respObj.status !== 303) {
+                            throw new Error("HTTP POST to HyperUA failed");
                         }
 
-                    );
-            }
-        );
-    },
+                        var headers     = respObj.headers,
+                            redirectURL = headers.location;
 
-    function step11(result) {
-        logCallback(++stepCnt);
+                        return resolveURL(formURL, redirectURL);
+                    }
 
-        console.log(result);
+                );
+        }
+    ),
 
-        return huaGet(
+    makeGetStep(
+        function step12(baseURL, $) {
+            var valveValue = $(classes["node-val"]).text();
 
-            result + huaOpts,
+            valveValue = S(valveValue).trim().s;
 
-            function transform(baseURL, $) {
-                var valveValue = $(classes["node-val"]).text();
-
-                return {
-                    value : S(valveValue).trim().s
-                };
-            }
-        );
-    },
-
-    function step12(result) {
-        logCallback(++stepCnt);
-
-        // expecting result to be: { url: ..., value: ... }
-
-        console.log("OutputValve toggled to value: ", result.value);
-    }
+            console.log("\nOutputValve toggled to value:", valveValue);
+        }
+    )
 
 ];
 
+var timeLabel = "Total elapsed time";
+console.time(timeLabel);
+
 steps
-    .reduce(Q.when, Q.resolve(entryURL))
+    .reduce(Q.when, Q.resolve({ state: { stepCnt: 0}, value: entryURL }))
 
     .then(
 
-        function end(result) {
+        function end() {
             console.log("\n*** completed ***\n");
         },
 
