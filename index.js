@@ -261,6 +261,8 @@ var steps = [
 
                 reqObj.headers["Content-Type"] = formType;
 
+                console.time("toggle-step");
+
                 return HTTP.request(reqObj)
                     .then(
 
@@ -269,6 +271,8 @@ var steps = [
                             if (respObj.status !== 303) {
                                 throw new Error("HTTP POST to HyperUA failed");
                             }
+
+                            console.timeEnd("toggle-step");
 
                             var headers     = respObj.headers,
                                 redirectURL = headers.location;
