@@ -6,7 +6,7 @@ var HTTP = require("q-io/http"),
 
 /* ------- HELPERS ------- */
 
-var helpers     = require("./helpers.js"),
+var helpers     = require("./lib/helpers.js"),
     huaGet      = helpers.huaGet,
     huaGetJsdom = helpers.huaGetJsdom,
     makeStep    = helpers.makeStep,
