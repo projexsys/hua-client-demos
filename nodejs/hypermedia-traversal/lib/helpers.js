@@ -14,27 +14,31 @@ var jquery = fs.readFileSync("./lib/jquery-2.0.0.js").toString();
 function huaGetJsdom(url, jsdomCallback) {
     var deferred = Q.defer();
     HTTP.read(url).then(
-        function succ(body) {
-            jsdom.env({
-                html: body,
-                src: [jquery],
-                url: url,
-                done: function (errors, window) {
-                    if (errors) {
-                        var e = new Error("jsdom errors");
-                        e.errors = errors;
-                        deferred.reject(e);
-                    } else {
-                        deferred.resolve(jsdomCallback(window, window.$));
+        (function (deferred) {
+            return function succ(body) {
+                jsdom.env({
+                    html: body,
+                    src: [jquery],
+                    url: url,
+                    done: function (errors, window) {
+                        if (errors) {
+                            var e = new Error("jsdom errors");
+                            e.errors = errors;
+                            deferred.reject(e);
+                        } else {
+                            deferred.resolve(jsdomCallback(window, window.$));
+                        }
                     }
-                }
-            });            
-        },
-        function fail(response) {
-            var e = new Error("HTTP error");
-            e.response = response;
-            deferred.reject(e);
-        }
+                });
+            };
+        })(deferred),
+        (function (deferred) {
+            return function fail(response) {
+                var e = new Error("HTTP error");
+                e.response = response;
+                deferred.reject(e);
+            };
+        })(deferred)
     );
     return deferred.promise;
 }
@@ -44,15 +48,19 @@ exports.huaGetJsdom = huaGetJsdom;
 function huaGetCheerio(url, cheerioCallback) {
     var deferred = Q.defer();
     HTTP.read(url).then(
-        function succ(body) {
-            var $ = cheerio.load(body);
-            deferred.resolve(cheerioCallback(url, $));
-        },
-        function fail(response) {
-            var e = new Error("HTTP error");
-            e.response = response;
-            deferred.reject(e);
-        }
+        (function (deferred) {
+            return function succ(body) {
+                var $ = cheerio.load(body);
+                deferred.resolve(cheerioCallback(url, $));
+            };
+        })(deferred),
+        (function (deferred) {
+            return function fail(response) {
+                var e = new Error("HTTP error");
+                e.response = response;
+                deferred.reject(e);
+            };
+        })(deferred)
     );
     return deferred.promise;
 }
@@ -77,13 +85,15 @@ function makeStep(fn) {
 
         if (Q.isPromise(value)) {
             return value.then(
-                function (result) {
-                    console.timeEnd(timeLabel);
-                    return {
-                        state: newState,
-                        value: result
+                (function (newState, timeLabel) {
+                    return function (result) {
+                        console.timeEnd(timeLabel);
+                        return {
+                            state: newState,
+                            value: result
+                        };
                     };
-                }
+                })(newState, timeLabel)
             );
         } else {
             console.log();

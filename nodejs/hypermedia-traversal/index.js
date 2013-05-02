@@ -193,17 +193,19 @@ var steps = [
             return HTTP.request(reqObj)
                 .then(
 
-                    function (respObj) {
-                        // HyperUA always redirects after a successful POST
-                        if (respObj.status !== 303) {
-                            throw new Error("HTTP POST to HyperUA failed");
-                        }
+                    (function (formURL) {
+                        return function (respObj) {
+                            // HyperUA always redirects after a successful POST
+                            if (respObj.status !== 303) {
+                                throw new Error("HTTP POST to HyperUA failed");
+                            }
 
-                        var headers     = respObj.headers,
-                            redirectURL = headers.location;
+                            var headers     = respObj.headers,
+                                redirectURL = headers.location;
 
-                        return resolveURL(formURL, redirectURL);
-                    }
+                            return resolveURL(formURL, redirectURL);
+                        };
+                    })(formURL)
 
                 );
         }
