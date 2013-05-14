@@ -1,0 +1,13 @@
+theme_ios.lua, widget_ios
+
+  MIT License, licensed according to:
+
+  http://developer.coronalabs.com/code/license
+
+
+server.png
+
+  Free for commercial use; licensed according to:
+
+  http://www.iconfinder.com/icondetails/63466/128/cloud_computing_data_center_datacenter_hosting_server_servers_icon
+  http://www.iconfinder.com/iconsets/Hosting_Icons#readme

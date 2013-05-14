@@ -1,8 +1,8 @@
-# hypermedia-traversal
+# cortex
 
 ## Description
 
-A sample NodeJS client for [HyperUA](http://projexsys.com/hyperua/), demonstrating programmatic traversal of the hypermedia API.
+Sample "native app" client ([Corona](http://www.coronalabs.com/products/corona-sdk/) based) used to access the Kepware + Wonderware InTouch batch reactor [demo](http://projexsys.com/portfolio/native-apps-ios/) via [HyperUA](http://projexsys.com/hyperua/).
 
 ## Copyright and License
 
