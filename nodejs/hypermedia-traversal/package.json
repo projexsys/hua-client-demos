@@ -1,17 +1,17 @@
 {
-    "name": "hua-sample-client",
+    "name": "hypermedia-traversal",
     "private": true,
     "version": "0.0.1",
-    "description": "A sample NodeJS client for HyperUA",
+    "description": "A sample NodeJS client for HyperUA, demonstrating programmatic traversal of the hypermedia API",
     "homepage": "https://github.com/projexsys/hua-client-demos",
     "author": "Projexsys, Inc.",
     "licenses": [
         {
             "type": "MIT",
-            "url": "https://github.com/projexsys/hua-client-demos/raw/master/LICENSE"
+            "url": "https://raw.github.com/projexsys/hua-client-demos/master/nodejs/hypermedia-traversal/LICENSE.txt"
         }
     ],
-    "main": "index.js",
+    "main": "./index.js",
     "repository": {
         "type": "git",
         "url": "git://github.com/projexsys/hua-client-demos.git"
